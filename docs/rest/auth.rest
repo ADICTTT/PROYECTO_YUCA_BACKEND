@@ -1,0 +1,11 @@
+POST http://127.0.0.1:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "hola@gmail.com",
+    "password": "hola123"
+}
+
+### ver perfil
+GET http://127.0.0.1:3000/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImhvbGFAZ21haWwuY29tIiwiaWQiOiJiMmYzY2E5OS1hYWFlLTQ0NzktOGZhYy1jZmIzOWIxMmQ1NmUiLCJpYXQiOjE3OTA2MzA0ODAsImV4cCI6MTc5MDcyMDQ4MH0.NuKzlAa7js1oM7OKj6ye-KzrZA7CJOYxsqF5JlIG-Zo
