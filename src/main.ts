@@ -12,6 +12,7 @@ async function bootstrap() {
     .setDescription("Proyecto Yuca backend para la gestión de mesas")
     .setVersion('1.0')
     .addTag('ilustración')
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);

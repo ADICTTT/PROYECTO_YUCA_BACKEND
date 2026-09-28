@@ -21,8 +21,7 @@ export class AuthService {
         }
 
         // Para verificar la contrasenia (asignar la comparación con bcrypt)
-        //const verificarContra = await bcrypt.compare(password, usuario.password);
-        const verificarContra = usuario.password == password;
+        const verificarContra = await bcrypt.compare(password, usuario.password);
         if(!verificarContra){
             throw new HttpException('Contraseña incorrecta', 401)
         }

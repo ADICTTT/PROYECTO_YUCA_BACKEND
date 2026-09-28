@@ -2,8 +2,8 @@ POST http://127.0.0.1:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "hola@gmail.com",
-    "password": "hola123"
+    "email": "palomo@gmail.com",
+    "password": "palomo"
 }
 
 ### ver perfil
