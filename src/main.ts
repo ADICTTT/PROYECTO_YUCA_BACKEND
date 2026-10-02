@@ -8,7 +8,10 @@ async function bootstrap() {
 
   // Habilitar CORS para permitir peticiones desde Angular (http://localhost:4200)
   app.enableCors({
-    origin: 'http://localhost:4200',
+    origin: [
+      'http://localhost:4200',                // Para cuando pruebes en tu PC
+      'https://proyectoyuca.vercel.app/'        // Reemplaza esto con la URL real que te dio Vercel
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
