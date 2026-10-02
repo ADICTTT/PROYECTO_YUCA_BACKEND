@@ -10,7 +10,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:4200',                // Para cuando pruebes en tu PC
-      'https://proyecto-yuca.vercel.app/'        // Reemplaza esto con la URL real que te dio Vercel
+      'https://proyecto-yuca.vercel.app'        // Reemplaza esto con la URL real que te dio Vercel
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
