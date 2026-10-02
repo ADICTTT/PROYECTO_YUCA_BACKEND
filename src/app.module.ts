@@ -29,12 +29,12 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
         port: +`${process.env.PORT}` || 5436,
         username: process.env.DATABASE_USER || 'postgres',
         password: process.env.DATABASE_PASSWORD || 'postgresql',
-        database: process.env.DATABASE_NAME || 'bd_yuca_backend',
+        database: process.env.DATABASE_NAME || 'dbYuca',
       }),
       entities: [
         __dirname + '/../**/*.entity{.ts,.js}'
       ],
-      synchronize: false,
+      synchronize: true,
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
     }), 
     UsersModule, RolesModule, AuthModule, PerfilesModule, EventosModule, PisosModule, SectoresModule, StandsModule, ParticipacionesModule, ReservasModule

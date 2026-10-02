@@ -11,7 +11,7 @@ export default new DataSource({
     port: +`${process.env.PORT}` || 5436,
     username: process.env.DATABASE_USER || 'postgres',
     password: process.env.DATABASE_PASSWORD || 'postgresql',
-    database: process.env.DATABASE_NAME || 'bd_yuca_backend',
+    database: process.env.DATABASE_NAME || 'dbYuca',
   }),
   entities: ['src/**/*.entity{.ts,.js}'],
   migrations: ['src/migrations/*{.ts,.js}'],
