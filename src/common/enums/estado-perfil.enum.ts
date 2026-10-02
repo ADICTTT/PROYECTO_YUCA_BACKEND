@@ -1,0 +1,5 @@
+export enum EstadoPerfil {
+  EN_REVISION = 'EN_REVISION',
+  APROBADO = 'APROBADO',
+  RECHAZADO = 'RECHAZADO',
+}

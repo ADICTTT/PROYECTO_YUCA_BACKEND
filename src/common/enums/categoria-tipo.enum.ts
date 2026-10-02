@@ -1,0 +1,5 @@
+export enum CategoriaTipo {
+  ILUSTRADORES = 'ILUSTRADORES',
+  EMPRENDEDORES = 'EMPRENDEDORES',
+  COMIDA = 'COMIDA',
+}

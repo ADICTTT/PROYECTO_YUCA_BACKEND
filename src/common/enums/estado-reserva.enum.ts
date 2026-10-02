@@ -1,0 +1,6 @@
+export enum EstadoReserva {
+  PENDIENTE_PAGO = 'PENDIENTE_PAGO',
+  CONFIRMADA = 'CONFIRMADA',
+  VENCIDA = 'VENCIDA',
+  CANCELADA = 'CANCELADA',
+}
