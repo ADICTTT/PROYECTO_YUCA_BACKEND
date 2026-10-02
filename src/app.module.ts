@@ -17,19 +17,25 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: ['.development.env', '.production.env']
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DATABASE_HOST || 'localhost',
-      port: +`${process.env.PORT}` || 5436,
-      username: process.env.DATABASE_USER || 'postgres',
-      password: process.env.DATABASE_PASSWORD || 'postgresql',
-      database: process.env.DATABASE_NAME || 'bd_yuca_backend',
+      // Si existe una URL completa (como la de Neon), la usa directo. Si no, usa los datos sueltos locales.
+      url: process.env.DATABASE_URL,
+      ...(!process.env.DATABASE_URL && {
+        host: process.env.DATABASE_HOST || 'localhost',
+        port: +`${process.env.PORT}` || 5436,
+        username: process.env.DATABASE_USER || 'postgres',
+        password: process.env.DATABASE_PASSWORD || 'postgresql',
+        database: process.env.DATABASE_NAME || 'bd_yuca_backend',
+      }),
       entities: [
         __dirname + '/../**/*.entity{.ts,.js}'
       ],
-      synchronize: false
+      synchronize: false,
+      ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
     }), 
     UsersModule, RolesModule, AuthModule, PerfilesModule, EventosModule, PisosModule, SectoresModule, StandsModule, ParticipacionesModule, ReservasModule
   ],
