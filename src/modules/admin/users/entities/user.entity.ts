@@ -1,28 +1,46 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Role } from "../../roles/entities/role.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { Perfil } from '../../perfiles/entities/perfile.entity';
+import { Rol } from '../../roles/entities/role.entity';
 
-@Entity()
-export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+@Entity('usuarios')
+export class Usuario {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column({unique: true})
-    username: string;
-    
-    @Column({unique: true})
-    email: string;
-    
-    @Column()
-    password: string;
+  @Column({ type: 'varchar', unique: true, length: 100 })
+  nombreUsuario: string;
 
-    @Column({default: true})
-    isActive: boolean;
+  @Column({ type: 'varchar', unique: true, length: 150 })
+  email: string;
 
-    @ManyToMany(() => Role, {eager: true})
-    @JoinTable({
-        name: 'user_roles',
-        joinColumn: {name: 'user_id'},
-        inverseJoinColumn: {name: 'role_id'}
-    })
-    roles: Role;
+  @Column({ type: 'varchar' })
+  password: string;
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @Column({ name: 'rolId', type: 'int', nullable: true })
+  rolId: number;
+
+  @ManyToOne(() => Rol, (role) => role.usuarios, { nullable: true })
+  @JoinColumn({ name: 'rolId' })
+  rol: Rol;
+
+  @OneToOne(() => Perfil, (perfil) => perfil.usuario)
+  perfil: Perfil;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

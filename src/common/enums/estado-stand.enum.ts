@@ -1,0 +1,4 @@
+export enum EstadoStand {
+  DISPONIBLE = 'DISPONIBLE',
+  DESHABILITADO = 'DESHABILITADO',
+}

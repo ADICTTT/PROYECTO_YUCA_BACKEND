@@ -3,73 +3,96 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { Usuario } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
 
-  constructor(@InjectRepository(User) 
-    private userRepository: Repository<User>
-  ){
-
-  }
+  constructor(
+    @InjectRepository(Usuario) 
+    private readonly userRepository: Repository<Usuario>
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { email, username } = createUserDto;
-    const existeUsername = await this.userRepository.findOne({where: {username: username}});
-    if(existeUsername){
-      throw new BadRequestException(`El username "${username}" ya está en uso`)
+    const { email, username, password } = createUserDto;
+
+    // 1. Validar que no exista el nombre de usuario
+    const existeUsername = await this.userRepository.findOne({ where: { nombreUsuario: username } });
+    if (existeUsername) {
+      throw new BadRequestException(`El nombre de usuario "${username}" ya está en uso`);
     }
-    const existeEmail = await this.userRepository.findOne({where: {email: email}});
-    if(existeEmail){
-      throw new BadRequestException(`El email "${email}" ya está en uso`)
+
+    // 2. Validar que no exista el correo electrónico
+    const existeEmail = await this.userRepository.findOne({ where: { email } });
+    if (existeEmail) {
+      throw new BadRequestException(`El email "${email}" ya está en uso`);
     }
-    const hashPassword = await bcrypt.hash(createUserDto.password, 12);
+
+    // 3. Encriptar la contraseña
+    const hashPassword = await bcrypt.hash(password, 12);
+
+    // 4. Crear la instancia asignando los campos correspondientes
     const newUser = this.userRepository.create({
-      username,
+      nombreUsuario: username,
       email,
       password: hashPassword
     });
-    this.userRepository.save(newUser);
-    const { password, ...resto_datos } = newUser;
-    return resto_datos;
+
+    // 5. Guardar en la base de datos
+    await this.userRepository.save(newUser);
+
+    // 6. Excluir la contraseña del objeto de retorno
+    const { password: _, ...restoDatos } = newUser;
+    return restoDatos;
   }
 
   async findAll() {
-    const usuarios = await this.userRepository.findBy({ isActive: true });
-    return usuarios;
+    return await this.userRepository.findBy({ isActive: true });
   }
 
   async findOne(id: string) {
-    const user = await this.userRepository.findOneBy({id: id});
-    if(!user){
-      throw new NotFoundException(`User con ID ${id} No existe`);
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id} no existe`);
     }
     return user;
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
     const user = await this.findOne(id);
-    if(updateUserDto.password){
+
+    // Si viene una nueva contraseña, la encriptamos
+    if (updateUserDto.password) {
       user.password = await bcrypt.hash(updateUserDto.password, 12);
     }
-    Object.assign(user, updateUserDto);
-    let result = this.userRepository.save(user);
-    const {password, ...resto_datos} = user;
-    return resto_datos;
+
+    // Actualizamos las propiedades de forma explícita
+    if (updateUserDto.username) {
+      user.nombreUsuario = updateUserDto.username;
+    }
+    if (updateUserDto.email) {
+      user.email = updateUserDto.email;
+    }
+
+    await this.userRepository.save(user);
+
+    const { password, ...restoDatos } = user;
+    return restoDatos;
   }
 
   async remove(id: string) {
     const user = await this.findOne(id);
     user.isActive = false;
     await this.userRepository.save(user);
-    return {message: `El usuario ${user.username} ha sido deshabilitado`}
+    return { message: `El usuario "${user.nombreUsuario}" ha sido deshabilitado` };
   }
 
-  async findOneByEmail(email: string){
-    const user = await this.userRepository.findOneBy({email: email});
-    if(!user) throw new NotFoundException(`El usuario con email: ${email} no existe`);
+  async findOneByEmail(email: string) {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException(`El usuario con email "${email}" no existe`);
+    }
     return user;
   }
 }
