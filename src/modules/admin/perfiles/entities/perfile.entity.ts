@@ -32,6 +32,9 @@ export class Perfil {
   @Column({ name: 'portafolio_url', type: 'varchar', length: 255, nullable: true })
   portafolioUrl?: string;
 
+  @Column({ name: 'foto_url', type: 'varchar', length: 255, nullable: true })
+  fotoUrl?: string;
+
   @Column({ type: 'enum', enum: EstadoPerfil, default: EstadoPerfil.EN_REVISION })
   estado: EstadoPerfil;
 

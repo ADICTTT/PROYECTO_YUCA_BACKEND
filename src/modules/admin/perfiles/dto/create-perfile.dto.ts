@@ -55,6 +55,10 @@ export class CreatePerfileDto {
   portafolioUrl?: string;
 
   @IsOptional()
+  @IsString()
+  fotoUrl?: string;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateRedSocialDto)
