@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString, MaxLength, MinLength, minLength } from "class-validator";
+import { Matches, IsString, MaxLength, MinLength, minLength } from "class-validator";
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
     @ApiProperty()
@@ -9,8 +10,17 @@ export class CreateUserDto {
     username: string;
 
     @ApiProperty()
-    @IsEmail()
-    email: string;
+    @Transform(({ value }) =>
+        typeof value === 'string' ? value.trim().toLowerCase().replace(/^@/, '') : value,
+    )
+    @IsString()
+    @MinLength(3)
+    @MaxLength(50)
+    @Matches(/^[a-z0-9._@-]+$/, {
+        message: 'El usuario solo puede tener letras, números, punto, guion y guion bajo',
+    })
+    email: string; // ahora funciona como "usuario" de login
+
 
     @ApiProperty()
     @IsString()

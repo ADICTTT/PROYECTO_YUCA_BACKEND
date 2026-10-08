@@ -11,25 +11,31 @@ export class AuthService {
                 private jwtService: JwtService
     ){}
 
-    async login(credenciales: LoginAuthDto){
-        const { email, password } = credenciales;
-        
-        // Busqueda de usuario por nombreUsuario, no tocar para nada
-        const usuario = await this.usuarioService.findOneByEmail(email);
-        if (!usuario){
-            return new HttpException('Usuario no encontrado', 404);
+    async login(credenciales: LoginAuthDto) {
+        const usuarioIngresado = credenciales.email.trim().toLowerCase();
+        const usuario = await this.usuarioService.findOneByEmail(usuarioIngresado);
+
+        if (!usuario.isActive) {
+            throw new HttpException('Usuario deshabilitado', 403);
         }
 
-        // Para verificar la contrasenia (asignar la comparación con bcrypt)
-        const verificarContra = await bcrypt.compare(password, usuario.password);
-        if(!verificarContra){
-            throw new HttpException('Contraseña incorrecta', 401)
+        const verificarContra = await bcrypt.compare(credenciales.password, usuario.password);
+        if (!verificarContra) {
+            throw new HttpException('Contraseña incorrecta', 401);
         }
-        
-        // Generar JWT
-        const payload = {email: email, id: usuario.id};
-        const token = await this.jwtService.sign(payload);
-        return {access_token: token, user: usuario}
-    }
+
+        // Si sigue con la contraseña por defecto (usuario + celular), debe cambiarla
+        let debeCambiarPassword = false;
+        if (usuario.perfil) {
+            const celular = (usuario.perfil.celular || '').replace(/\D/g, '');
+            debeCambiarPassword = credenciales.password === `${usuario.nombreUsuario}${celular}`;
+        }
+
+        const payload = { email: usuario.email, id: usuario.id, rol: usuario.rol?.nombre };
+        const token = this.jwtService.sign(payload);
+
+        const { password: _, ...usuarioSinPassword } = usuario;
+        return { access_token: token, user: usuarioSinPassword, debeCambiarPassword };
+        }
 
 }

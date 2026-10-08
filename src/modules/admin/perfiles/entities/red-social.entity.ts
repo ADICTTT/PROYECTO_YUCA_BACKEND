@@ -15,8 +15,6 @@ export class RedSocial {
   @Column({ type: 'varchar', length: 255 })
   url: string;
 
-  
-
   @ManyToOne(() => Perfil, (perfil) => perfil.redesSociales, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'perfil_id' })
   perfil: Perfil;
