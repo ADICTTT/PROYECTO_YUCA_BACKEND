@@ -34,7 +34,7 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
       entities: [
         __dirname + '/../**/*.entity{.ts,.js}'
       ],
-      synchronize: true,
+      synchronize: false,
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
     }), 
     UsersModule, RolesModule, AuthModule, PerfilesModule, EventosModule, PisosModule, SectoresModule, StandsModule, ParticipacionesModule, ReservasModule

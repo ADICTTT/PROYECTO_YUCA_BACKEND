@@ -5,6 +5,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Usuario } from './entities/user.entity';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { CambiarCredencialesDto } from '../../admin/users/dto/cambiar-credenciales.dto';
+
 
 @Injectable()
 export class UsersService {
@@ -97,5 +100,58 @@ export class UsersService {
       throw new NotFoundException(`El usuario "${email}" no existe`);
     }
     return user;
+  }
+
+  async restablecerCredenciales(perfilId: number) {
+    const user = await this.userRepository.findOne({
+      where: { perfil: { id: perfilId } },
+      relations: { perfil: true, rol: true },
+    });
+    if (!user) throw new NotFoundException('Este perfil no tiene una cuenta creada');
+    if (user.rol?.nombre === 'ADMIN') {
+      throw new BadRequestException('No se pueden restablecer credenciales de un administrador');
+    }
+
+    const celular = (user.perfil.celular || '').replace(/\D/g, '');
+    if (!celular) throw new BadRequestException('El perfil no tiene celular registrado');
+
+    // Misma fórmula que usa el login para detectar la contraseña por defecto
+    const nuevaPassword = `${user.nombreUsuario}${celular}`;
+    user.password = await bcrypt.hash(nuevaPassword, 12);
+    await this.userRepository.save(user);
+
+    return {
+      nombre: user.perfil.nombreComercial,
+      usuario: user.email,
+      password: nuevaPassword,
+    };
+  }
+
+  async cambiarCredenciales(userId: string, dto: CambiarCredencialesDto) {
+    const user = await this.findOne(userId);
+
+    const ok = await bcrypt.compare(dto.passwordActual, user.password);
+    if (!ok) throw new UnauthorizedException('La contraseña actual es incorrecta');
+
+    if (dto.nuevaPassword === dto.passwordActual) {
+      throw new BadRequestException('La nueva contraseña debe ser distinta a la actual');
+    }
+
+    const nuevoUsuario = dto.nuevoNombreUsuario?.trim().toLowerCase();
+    if (nuevoUsuario && nuevoUsuario !== user.email) {
+      const existe = await this.userRepository.findOne({
+        where: [{ email: nuevoUsuario }, { nombreUsuario: nuevoUsuario }],
+      });
+      if (existe && existe.id !== user.id) {
+        throw new ConflictException('Ese usuario ya está en uso');
+      }
+      user.email = nuevoUsuario;
+      user.nombreUsuario = nuevoUsuario;
+    }
+
+    user.password = await bcrypt.hash(dto.nuevaPassword, 12);
+    await this.userRepository.save(user);
+
+    return { message: 'Credenciales actualizadas. Inicia sesión nuevamente.' };
   }
 }
