@@ -27,7 +27,7 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
       ...(!process.env.DATABASE_URL && {
         host: process.env.DATABASE_HOST || 'localhost',
         port: +`${process.env.PORT}` || 5436,
-        username: process.env.DATABASE_USER || 'postgres',
+        username: process.env.DATABASE_USER || 'postgres', 
         password: process.env.DATABASE_PASSWORD || 'postgresql',
         database: process.env.DATABASE_NAME || 'dbYuca',
       }),
