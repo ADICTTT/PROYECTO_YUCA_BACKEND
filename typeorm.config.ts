@@ -14,6 +14,6 @@ export default new DataSource({
     database: process.env.DATABASE_NAME || 'dbYuca',
   }),
   entities: ['src/**/*.entity{.ts,.js}'],
-  migrations: ['src/migrations/*{.ts,.js}'],
+  migrations: ['src/database/migrations/*{.ts,.js}'],
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
 });

@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { EstadoStand } from '../../../../common/enums/estado-stand.enum';
+import { CategoriaTipo } from '../../../../common/enums/categoria-tipo.enum';
 import { Piso } from '../../pisos/entities/piso.entity';
 import { Reserva } from '../../reservas/entities/reserva.entity';
 import { Sector } from '../../sectores/entities/sectore.entity';
@@ -43,6 +44,13 @@ export class Stand {
   @ManyToOne(() => Piso, (piso) => piso.stands, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'piso_id' })
   piso: Piso;
+
+  @Column({
+    type: 'enum',
+    enum: CategoriaTipo,
+    default: CategoriaTipo.ILUSTRADORES
+  })
+  categoria: CategoriaTipo;
 
   @ManyToOne(() => Sector, (sector) => sector.stands, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'sector_id' })
