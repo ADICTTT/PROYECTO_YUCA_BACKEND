@@ -38,7 +38,7 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
         __dirname + '/../**/*.entity{.ts,.js}'
       ],
       // Solo sincroniza si DB_SYNC=true (únicamente en el .env local)
-      synchronize: process.env.DB_SYNC === 'true',
+      synchronize: true,
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
     }),
     // Límite global: 100 peticiones por minuto por IP

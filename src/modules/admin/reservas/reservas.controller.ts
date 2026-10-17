@@ -61,12 +61,12 @@ export class ReservasController {
 
   @Get()
   listar(@Query() filtros: FiltrarReservasDto) {
-    return this.reservasService.listar({ estado: filtros.estado, q: filtros.q })
+    return this.reservasService.listar({ estado: filtros.estado, q: filtros.q });
   }
 
   @Post('manual')
   crearManual(@Req() req: any, @Body() dto: CreateReservaManualDto) {
-    this.reservasService.crearManual(dto, req.user.id)
+    return this.reservasService.crearManual(dto, req.user.id);
   }
 
   @Patch(':id/pagar')
@@ -81,6 +81,6 @@ export class ReservasController {
 
   @Patch(':id/extender')
   extender(@Param('id', ParseIntPipe) id: number, @Body() dto: ExtenderReservaDto) {
-    return this.reservasService.extenderPlazo(id, dto.horas)
+    return this.reservasService.extenderPlazo(id, dto.horas);
   }
 }
