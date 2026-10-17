@@ -42,6 +42,18 @@ export class Evento {
   @Column({ type: 'enum', enum: EstadoEvento, default: EstadoEvento.BORRADOR })
   estado: EstadoEvento;
 
+  @Column({ name: 'seleccion_abre_en', type: 'timestamptz', nullable: true })
+  seleccionAbreEn: Date | null;
+
+  @Column({ name: 'horas_pago', type: 'int', default: 24 })
+  horasPago: number;
+
+  @Column({ name: 'reglas_texto', type: 'text', nullable: true })
+  reglasTexto: string | null;
+
+  @Column({ name: 'reglas_version', type: 'int', default: 1 })
+  reglasVersion: number;
+
   @OneToMany(() => EventoCategoria, (ec) => ec.evento, { cascade: true })
   categorias: EventoCategoria[];
 
@@ -50,4 +62,6 @@ export class Evento {
 
   @OneToMany(() => Participacion, (participacion) => participacion.evento)
   participaciones: Participacion[];
+
+
 }

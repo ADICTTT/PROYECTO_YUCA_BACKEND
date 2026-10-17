@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   Post,
@@ -14,6 +15,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { v2 as cloudinary } from 'cloudinary';
 import { PerfilesService } from './perfiles.service';
@@ -40,22 +42,40 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as any,
 });
 
+// Opciones de subida: límite de 5 MB y solo JPG/PNG
+const uploadOptions = {
+  storage: cloudinaryStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req: any, file: Express.Multer.File, cb: any) => {
+    const ok = ['image/jpeg', 'image/png'].includes(file.mimetype);
+    cb(ok ? null : new BadRequestException('Solo se permiten imágenes JPG o PNG'), ok);
+  },
+};
+
 @Controller('perfiles')
 export class PerfilesController {
   constructor(private readonly perfilesService: PerfilesService) {}
 
   // ENDPOINT PÚBLICO: Postulación del expositor
   @Post('publico/registro')
-  @UseInterceptors(FileInterceptor('file', { storage: cloudinaryStorage }))
+  @UseInterceptors(FileInterceptor('file', uploadOptions))
   registrarPerfil(
     @UploadedFile() file: Express.Multer.File,
     @Body() createPerfilDto: CreatePerfileDto,
   ) {
     if (file) {
-      // file.path contiene la URL completa y permanente de Cloudinary (https://res.cloudinary.com/...)
+      // file.path contiene la URL completa y permanente de Cloudinary
       createPerfilDto.fotoUrl = file.path;
     }
     return this.perfilesService.registrarPerfilPublico(createPerfilDto);
+  }
+
+  // ENDPOINT PÚBLICO: estado del perfil por celular (máx. 5 por minuto)
+  // Debe ir ANTES de cualquier @Get(':id')
+  @Get('estado')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  estadoPublico(@Query('celular') celular: string) {
+    return this.perfilesService.estadoPorCelular(celular);
   }
 
   // ENDPOINT ADMIN: Listar perfiles (filtrar por ?estado=EN_REVISION)
@@ -96,7 +116,7 @@ export class PerfilesController {
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  @UseInterceptors(FileInterceptor('file', { storage: cloudinaryStorage }))
+  @UseInterceptors(FileInterceptor('file', uploadOptions))
   updateConFoto(
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile() file: Express.Multer.File,

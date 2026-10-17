@@ -31,9 +31,26 @@ export class PerfilesService {
     return await this.perfilRepository.save(nuevoPerfil);
   }
 
+  // 1b. Consulta pública del estado por celular (sin login).
+  // Compara los últimos 8 dígitos y devuelve SOLO el estado, nunca datos del perfil.
+  async estadoPorCelular(celular: string): Promise<{ estado: string }> {
+    const digitos = (celular || '').replace(/\D/g, '');
+    if (digitos.length < 8) return { estado: 'SIN_PERFIL' };
+    const ultimos = digitos.slice(-8);
+
+    const perfil = await this.perfilRepository
+      .createQueryBuilder('perfil')
+      .where(`RIGHT(regexp_replace(perfil.celular, '\\D', '', 'g'), 8) = :ultimos`, { ultimos })
+      .orderBy('perfil.id', 'DESC')
+      .getOne();
+
+    return { estado: perfil ? perfil.estado : 'SIN_PERFIL' };
+  }
+
   // 2. Obtener todos los perfiles con filtros (Admin)
   async findAll(estado?: EstadoPerfil): Promise<Perfil[]> {
-    const query = this.perfilRepository.createQueryBuilder('perfil')
+    const query = this.perfilRepository
+      .createQueryBuilder('perfil')
       .leftJoinAndSelect('perfil.redesSociales', 'redesSociales');
 
     if (estado) {
@@ -44,24 +61,23 @@ export class PerfilesService {
   }
 
   // 3. Obtener un perfil por ID
-  // En perfiles.service.ts
-async findOne(id: number): Promise<Perfil> {
-  const perfil = await this.perfilRepository.findOne({
-    where: { id },
-    relations: {
-      redesSociales: true,
-      usuario: true,
-    },
-  });
+  async findOne(id: number): Promise<Perfil> {
+    const perfil = await this.perfilRepository.findOne({
+      where: { id },
+      relations: {
+        redesSociales: true,
+        usuario: true,
+      },
+    });
 
-  if (!perfil) {
-    throw new NotFoundException(`Perfil con ID ${id} no encontrado`);
+    if (!perfil) {
+      throw new NotFoundException(`Perfil con ID ${id} no encontrado`);
+    }
+
+    return perfil;
   }
 
-  return perfil;
-}
-
- async cambiarEstado(id: number, updateEstadoDto: UpdateEstadoPerfilDto) {
+  async cambiarEstado(id: number, updateEstadoDto: UpdateEstadoPerfilDto) {
     const perfil = await this.findOne(id);
     perfil.estado = updateEstadoDto.estado;
 
@@ -142,7 +158,7 @@ async findOne(id: number): Promise<Perfil> {
     // Retorna el perfil con sus relaciones actualizadas
     return this.findOne(id);
   }
-  
+
   async findByUsuarioId(usuarioId: string) {
     const perfil = await this.perfilRepository.findOne({ where: { usuarioId } });
     if (!perfil) throw new NotFoundException('Perfil no encontrado');

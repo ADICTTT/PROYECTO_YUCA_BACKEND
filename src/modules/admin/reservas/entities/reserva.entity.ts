@@ -29,11 +29,23 @@ export class Reserva {
   @Column({ type: 'enum', enum: EstadoReserva, default: EstadoReserva.PENDIENTE_PAGO })
   estado: EstadoReserva;
 
-  @Column({ name: 'reservado_en', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'reservado_en', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   reservadoEn: Date;
 
-  @Column({ name: 'vence_en', type: 'timestamp' })
+  @Column({ name: 'vence_en', type: 'timestamptz' })
   venceEn: Date;
+
+  @Column({ type: 'varchar', length: 20, unique: true, nullable: true })
+  codigo: string | null;
+
+  @Column({ name: 'pagado_en', type: 'timestamptz', nullable: true })
+  pagadoEn: Date | null;
+
+  @Column({ name: 'pagado_por', type: 'uuid', nullable: true })
+  pagadoPor?: string | null;
+
+  @Column({ name: 'motivo_liberacion', type: 'varchar', length: 200, nullable: true })
+  motivoLiberacion: string | null;
 
   @ManyToOne(() => Participacion, (participacion) => participacion.reservas, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'participacion_id' })

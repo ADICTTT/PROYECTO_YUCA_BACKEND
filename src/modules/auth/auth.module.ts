@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from '../admin/users/users.module';
-import { jwtConstant } from './constants';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     UsersModule,
-    JwtModule.register({
+    JwtModule.registerAsync({
       global: true,
-      secret: jwtConstant.secret,
-      signOptions: {expiresIn: '90000s'}
-    })
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        // Si falta JWT_SECRET, el backend no arranca (así no queda un secreto por defecto)
+        secret: config.getOrThrow<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '90000s' },
+      }),
+    }),
   ],
   controllers: [AuthController],
-  providers: [AuthService]
+  providers: [AuthService],
 })
 export class AuthModule {}

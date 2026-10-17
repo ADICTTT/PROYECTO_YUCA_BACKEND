@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Perfil } from '../../perfiles/entities/perfile.entity';
 import { Rol } from '../../roles/entities/role.entity';
 
@@ -22,6 +23,8 @@ export class Usuario {
   @Column({ type: 'varchar', unique: true, length: 150 })
   email: string;
 
+  // Nunca sale en las respuestas JSON (ver ClassSerializerInterceptor en main.ts)
+  @Exclude()
   @Column({ type: 'varchar' })
   password: string;
 

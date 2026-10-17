@@ -1,11 +1,16 @@
-// src/modules/stands/stands.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from '@nestjs/common';
+// src/modules/admin/stands/stands.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { StandsService } from './stands.service';
 import { CreateStandDto } from './dto/create-stand.dto';
 import { UpdateStandDto } from './dto/update-stand.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard, Roles } from '../../../common/guards/roles.guard';
 
+// Todo el editor de mesas es solo para ADMIN (el expositor usa /reservas/mapa)
 @Controller('stands')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class StandsController {
   constructor(private readonly standsService: StandsService) {}
 

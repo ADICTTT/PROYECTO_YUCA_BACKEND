@@ -1,5 +1,16 @@
-// src/modules/stands/dto/create-stand.dto.ts
-import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+// src/modules/admin/stands/dto/create-stand.dto.ts
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { CategoriaTipo } from '../../../../common/enums/categoria-tipo.enum';
 
 export class CreateStandDto {
@@ -42,4 +53,29 @@ export class CreateStandDto {
   @IsOptional()
   @IsNumber()
   rotacion?: number;
+
+  // ───────── Datos de la mesa (opcionales) ─────────
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  medidas?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(50)
+  sillas?: number | null;
+
+  @IsOptional()
+  @IsBoolean()
+  incluyeMerienda?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  bajoTecho?: boolean;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string | null;
 }

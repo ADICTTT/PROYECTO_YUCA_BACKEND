@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { RolesModule } from './modules/admin/roles/roles.module';
 import { UsersModule } from './modules/admin/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -34,12 +37,20 @@ import { ReservasModule } from './modules/admin/reservas/reservas.module';
       entities: [
         __dirname + '/../**/*.entity{.ts,.js}'
       ],
-      synchronize: true,
+      // Solo sincroniza si DB_SYNC=true (únicamente en el .env local)
+      synchronize: process.env.DB_SYNC === 'true',
       ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
-    }), 
+    }),
+    // Límite global: 100 peticiones por minuto por IP
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    // Permite los @Cron (liberar reservas vencidas)
+    ScheduleModule.forRoot(),
     UsersModule, RolesModule, AuthModule, PerfilesModule, EventosModule, PisosModule, SectoresModule, StandsModule, ParticipacionesModule, ReservasModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

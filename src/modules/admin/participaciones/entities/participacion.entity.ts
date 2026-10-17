@@ -22,6 +22,12 @@ export class Participacion {
   @Column({ name: 'permite_companero', type: 'boolean', default: false })
   permiteCompanero: boolean;
 
+  @Column({ name: 'reglas_aceptadas_en', type: 'timestamptz', nullable: true })
+  reglasAceptadasEn: Date | null;
+
+  @Column({ name: 'reglas_version', type: 'int', nullable: true })
+  reglasVersion: number | null;
+
   @ManyToOne(() => Perfil, (perfil) => perfil.participaciones, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'perfil_id' })
   perfil: Perfil;
