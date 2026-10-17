@@ -93,6 +93,19 @@ export class PerfilesController {
     return this.perfilesService.findByUsuarioId(req.user.id);
   }
 
+  // ENDPOINT EXPOSITOR: cambiar la foto de su propio perfil (máx. 10 por minuto)
+  @Patch('mio/foto')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('EXPOSITOR')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @UseInterceptors(FileInterceptor('file', uploadOptions))
+  cambiarMiFoto(@Req() req: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Selecciona una imagen JPG o PNG');
+    }
+    return this.perfilesService.actualizarFotoMia(req.user.id, file.path);
+  }
+
   // ENDPOINT ADMIN: Ver detalle de un perfil
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)

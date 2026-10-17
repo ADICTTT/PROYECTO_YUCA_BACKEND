@@ -164,4 +164,11 @@ export class PerfilesService {
     if (!perfil) throw new NotFoundException('Perfil no encontrado');
     return perfil;
   }
+
+  // El expositor cambia solo la foto de SU perfil (la foto vieja queda en Cloudinary)
+  async actualizarFotoMia(usuarioId: string, fotoUrl: string) {
+    const perfil = await this.findByUsuarioId(usuarioId);
+    perfil.fotoUrl = fotoUrl;
+    return await this.perfilRepository.save(perfil);
+  }
 }
