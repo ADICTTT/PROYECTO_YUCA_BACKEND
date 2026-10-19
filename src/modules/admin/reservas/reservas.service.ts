@@ -17,6 +17,8 @@ import { TipoParticipante } from '../../../common/enums/tipo-participante.enum';
 
 const ACTIVAS = [EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CONFIRMADA];
 const EVENTOS_ABIERTOS = [EstadoEvento.PUBLICADO, EstadoEvento.INSCRIPCIONES_ABIERTAS];
+// TEMPORAL: true = selección abierta para todos los perfiles aprobados, sin importar la fecha
+const SELECCION_SIEMPRE_ABIERTA = true;
 
 const REGLAS_POR_DEFECTO =
   'Reglas y condiciones de participación.\n\n' +
@@ -239,7 +241,7 @@ export class ReservasService {
         id: ev.id,
         nombre: ev.nombre,
         seleccionAbreEn: ev.seleccionAbreEn,
-        abierta: !!ev.seleccionAbreEn && ev.seleccionAbreEn <= ahora,
+        abierta: SELECCION_SIEMPRE_ABIERTA || (!!ev.seleccionAbreEn && ev.seleccionAbreEn <= ahora),
         whatsappCanal: ev.whatsappCanal,
       },
       categoria: perfil?.categoria ?? null,
@@ -310,7 +312,7 @@ export class ReservasService {
           throw fallo(404, 'EVENTO_NO_DISPONIBLE', 'El evento no está disponible');
         }
 
-        if (!ev.seleccionAbreEn || ev.seleccionAbreEn > ahora) {
+        if (!SELECCION_SIEMPRE_ABIERTA && (!ev.seleccionAbreEn || ev.seleccionAbreEn > ahora)) {
           throw fallo(403, 'SELECCION_CERRADA', 'La selección de mesas aún no está abierta');
         }
 
