@@ -6,6 +6,10 @@ import { Stand } from './entities/stand.entity';
 import { CreateStandDto } from './dto/create-stand.dto';
 import { UpdateStandDto } from './dto/update-stand.dto';
 import { UpdateLayoutDto } from './dto/update-layout.dto';
+import { EstadoReserva } from '../../../common/enums/estado-reserva.enum';
+
+// Solo estas reservas cuentan como "activas". VENCIDA y CANCELADA son historial.
+const ACTIVAS = [EstadoReserva.PENDIENTE_PAGO, EstadoReserva.CONFIRMADA];
 
 @Injectable()
 export class StandsService {
@@ -13,6 +17,11 @@ export class StandsService {
     @InjectRepository(Stand)
     private readonly standRepository: Repository<Stand>,
   ) {}
+
+  // Devuelve true solo si el stand tiene al menos una reserva activa
+  private tieneReservaActiva(stand: Stand): boolean {
+    return (stand.reservas ?? []).some((r) => ACTIVAS.includes(r.estado));
+  }
 
   async create(createStandDto: CreateStandDto): Promise<Stand> {
     const stand = this.standRepository.create(createStandDto);
@@ -44,10 +53,9 @@ export class StandsService {
   async update(id: number, updateStandDto: UpdateStandDto): Promise<Stand> {
     const stand = await this.findOne(id);
 
-    // Regla de protección: Si cambia la categoría, verificar que no tenga reservas activas
+    // Regla de protección: si cambia la categoría, no debe tener reservas activas
     if (updateStandDto.categoria && updateStandDto.categoria !== stand.categoria) {
-      const tieneReservaActiva = stand.reservas && stand.reservas.length > 0;
-      if (tieneReservaActiva) {
+      if (this.tieneReservaActiva(stand)) {
         throw new BadRequestException('No se puede cambiar la categoría de un stand con reserva activa.');
       }
     }
@@ -73,9 +81,8 @@ export class StandsService {
   async remove(id: number) {
     const stand = await this.findOne(id);
 
-    // Regla de protección: No se puede borrar si tiene una reserva activa
-    const tieneReservaActiva = stand.reservas && stand.reservas.length > 0;
-    if (tieneReservaActiva) {
+    // Regla de protección: no se puede borrar si tiene una reserva activa
+    if (this.tieneReservaActiva(stand)) {
       throw new BadRequestException('No se puede borrar un stand que tiene una reserva activa.');
     }
 
