@@ -19,7 +19,7 @@ export class PerfilesService {
     private readonly usuarioRepository: Repository<Usuario>,
     @InjectRepository(Rol)
     private readonly rolRepository: Repository<Rol>,
-  ) {}
+  ) { }
 
   // 1. Registro público (Expositor)
   async registrarPerfilPublico(createPerfilDto: CreatePerfileDto): Promise<Perfil> {
@@ -51,10 +51,13 @@ export class PerfilesService {
   async findAll(estado?: EstadoPerfil): Promise<Perfil[]> {
     const query = this.perfilRepository
       .createQueryBuilder('perfil')
-      .leftJoinAndSelect('perfil.redesSociales', 'redesSociales');
+      .leftJoinAndSelect('perfil.redesSociales', 'redesSociales')
+      // Agregamos la condición para que solo traiga los activos por defecto
+      .where('perfil.isActive = :isActive', { isActive: true });
 
+    // Si además te pasan un estado por parámetro, lo filtramos con AND
     if (estado) {
-      query.where('perfil.estado = :estado', { estado });
+      query.andWhere('perfil.estado = :estado', { estado });
     }
 
     return await query.orderBy('perfil.id', 'DESC').getMany();
@@ -169,6 +172,21 @@ export class PerfilesService {
   async actualizarFotoMia(usuarioId: string, fotoUrl: string) {
     const perfil = await this.findByUsuarioId(usuarioId);
     perfil.fotoUrl = fotoUrl;
+    return await this.perfilRepository.save(perfil);
+  }
+
+  async remove(id: number): Promise<Perfil> {
+    // 1. Buscamos el perfil para asegurarnos de que existe
+    const perfil = await this.perfilRepository.findOne({ where: { id } });
+
+    if (!perfil) {
+      throw new NotFoundException('El perfil que intentas eliminar no existe');
+    }
+
+    // 2. Cambiamos su estado a falso
+    perfil.isActive = false;
+
+    // 3. Guardamos los cambios
     return await this.perfilRepository.save(perfil);
   }
 }

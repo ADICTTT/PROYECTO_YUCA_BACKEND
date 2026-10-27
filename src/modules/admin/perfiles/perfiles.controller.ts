@@ -13,6 +13,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Throttle } from '@nestjs/throttler';
@@ -151,4 +152,10 @@ export class PerfilesController {
   ) {
     return this.perfilesService.cambiarEstado(id, updateEstadoDto);
   }
+
+  @Delete(':id')
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.perfilesService.remove(id);
+  }
+
 }

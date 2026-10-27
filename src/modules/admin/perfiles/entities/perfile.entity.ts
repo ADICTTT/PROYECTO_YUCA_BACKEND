@@ -9,7 +9,7 @@ import { Usuario } from '../../users/entities/user.entity';
 @Entity('perfiles')
 export class Perfil {
   @PrimaryGeneratedColumn()
-  id: number; 
+  id: number;
 
   @Column({ name: 'nombre_real', type: 'varchar', length: 120 })
   nombreReal: string;
@@ -37,6 +37,9 @@ export class Perfil {
 
   @Column({ type: 'enum', enum: EstadoPerfil, default: EstadoPerfil.EN_REVISION })
   estado: EstadoPerfil;
+
+  @Column({ default: true })
+  isActive: boolean;
 
   // Clave foránea opcional al crear el perfil sin usuario explícito
   @Column({ name: 'usuario_id', type: 'uuid', nullable: true, unique: true })
